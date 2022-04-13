@@ -13,7 +13,7 @@ namespace zich{
         Matrix::Matrix(vector<double> matrix, int row, int column){
                 if(column < 0 ||row < 0 ||  column*row  != matrix.size()){
                         //if  the row or column if under 0 or the size of the vector isnt equal to row*column
-                        throw("illeagal veriable");
+                        throw runtime_error("illeagal veriable");
                 }
                 this->matrix = std::move(matrix);
                 this->row=row;
@@ -246,7 +246,7 @@ namespace zich{
         Matrix& Matrix::operator++(){
                 int size = (*this).matrix.size();
                 for (int i = 0; i < size; i++){
-                        (*this).matrix[(unsigned int)i]++;
+                        (*this).matrix[(unsigned int)i]= (*this).matrix[(unsigned int)i]+1;
                 }
                 return (*this);
         } 
@@ -254,7 +254,7 @@ namespace zich{
         Matrix& Matrix::operator--(){
                 int size = (*this).matrix.size();
                 for (int i = 0; i < size ; i++){
-                        (*this).matrix[(unsigned int)i]--;
+                        (*this).matrix[(unsigned int)i]= (*this).matrix[(unsigned int)i]-1;
                 }
                 return (*this);
         }   
@@ -263,7 +263,7 @@ namespace zich{
                 Matrix mat_copy = *this;
                 int size = mat_copy.matrix.size();
                 for (int i = 0; i < size; i++){
-                        (*this).matrix[(unsigned int)i]++;
+                        (*this).matrix[(unsigned int)i]= (*this).matrix[(unsigned int)i]+1;
                 }
                 return mat_copy;       
         }   
@@ -272,7 +272,7 @@ namespace zich{
                 Matrix mat_copy = *this;
                 int size = mat_copy.matrix.size();
                 for (int i = 0; i < size; i++){
-                        (*this).matrix[(unsigned int)i]--;
+                        (*this).matrix[(unsigned int)i]= (*this).matrix[(unsigned int)i]-1;
                 }
                 return mat_copy;
         }   
@@ -305,25 +305,49 @@ namespace zich{
                 }
                 return output;
         }
+        
         istream& operator>> (istream& input , Matrix& mat){
-                // if(input.cur != '['){
-                //         throw runtime_error("can't get the input mat");
-                // }
-                 //if the start of the input isn't [ we rising error
-                //else we add the content to the metrix that we have
-                for(int i = 0; i <mat.row ; i++){
-                        for(int j= 0; j < mat.column;j++){
-                                if(input.get() != ',' || input.get() != ' '){
-                                        if (j == 0 && input.get() != '['){
-                                                throw runtime_error("can't get the input mat");
+                string line;
+                bool flag = false;
+                bool spa = false;
+                while(getline(input,line)){
+                       for(int i = 0; i < line.size();i++){
+                                if(flag){
+                                        //if we dont get ',' aftet ] we throw error
+                                        if(line[(unsigned int)i] == ',' ||line[(unsigned int)i] == '\n'){
+                                                flag = false;
+                                                spa = true;
+                                                continue;
                                         }
-                                        input>> mat.matrix[(unsigned int)(i+j)];
-                                        if (j == mat.column-1 && input.get() != ']'){
-                                                throw runtime_error("can't get the input mat");
+                                        throw ("can't get the input mat");
+                                }
+                                if(spa){
+                                        //if we dont get ' ' aftet , we throw error
+                                        if(line[(unsigned int)i] != ' '){
+                                                throw ("can't get the input mat");
+                                        }
+                                        spa = false;
+                                }
+                                if(line[0] != '['){
+                                        //if we dont get in the start [ we throw error
+                                        throw ("can't get the input mat");
+                                }
+                                if(line[(unsigned int)i] >= '0' && line[(unsigned int)i] <= '9'){
+                                        double number = line[(unsigned int)i] - '0';
+                                        if(mat.matrix.size() >= (i)){
+                                                mat.matrix[(unsigned int)i] = number;
+                                        }
+                                        if(mat.matrix.size() < (i)){
+                                                mat.matrix.resize(mat.matrix.size()+2,1);
+                                                mat.matrix[(unsigned int)(i)] = number;
+                                                
                                         }
                                 }
-                                        
-                        }
+                                if(line[(unsigned int)i] == ']'){
+                                        flag = true;
+                                }
+                               
+                       }
                 }
                 return input;
         }
